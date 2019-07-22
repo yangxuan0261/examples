@@ -6,9 +6,9 @@ replace github.com/testcontainers/testcontainer-go => github.com/testcontainers/
 
 replace github.com/golang/lint => github.com/golang/lint v0.0.0-20190227174305-8f45f776aaf1
 
-replace github.com/nats-io/nats.go => github.com/nats-io/nats.go v1.8.2-0.20190711203405-98cd22864ded
-
 exclude sourcegraph.com/sourcegraph/go-diff v0.5.1
+
+replace github.com/nats-io/nats.go v1.8.2-0.20190607221125-9f4d16fe7c2d => github.com/nats-io/nats.go v1.8.1
 
 require (
 	github.com/99designs/gqlgen v0.9.1
