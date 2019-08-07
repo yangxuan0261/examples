@@ -49,6 +49,7 @@ Most likely needed examples
 - [shutdown](shutdown) - Demonstrates graceful shutdown via context cancellation
 - [stream](stream) - An example of a streaming service and client
 - [template](template) - Api, web and srv service templates generated with the 'micro new' command
+- [tunnel](tunnel) - How to use connection tunneling with the tunnel package
 - [waitgroup](waitgroup) - Demonstrates how to use a waitgroup with a service
 - [wrapper](wrapper) - A simple example of using a log wrapper
 
