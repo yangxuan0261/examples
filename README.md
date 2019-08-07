@@ -4,7 +4,7 @@ This is a repository for micro examples. Feel free to contribute.
 
 ## i18n
 
-[中文版本](https://github.com/micro-in-cn/micro-all-in-one)
+[中文版本](https://github.com/micro-in-cn/tutorials)
 
 ## Contents
 
