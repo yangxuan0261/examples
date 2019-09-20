@@ -4,9 +4,9 @@ import (
 	"sync"
 	"time"
 
-	"github.com/micro/go-micro/util/log"
-	"github.com/micro/go-micro/tunnel"
 	"github.com/micro/go-micro/transport"
+	"github.com/micro/go-micro/tunnel"
+	"github.com/micro/go-micro/util/log"
 )
 
 // testAccept will accept connections on the transport, create a new link and tunnel on top
@@ -17,7 +17,7 @@ func testAccept(tun tunnel.Tunnel, wg *sync.WaitGroup) {
 		log.Fatal(err)
 	}
 
-	log.Log("Listening on ", tl.Addr())
+	log.Log("Listening on ", tun.Address())
 	wg.Done()
 
 	// accept a connection
