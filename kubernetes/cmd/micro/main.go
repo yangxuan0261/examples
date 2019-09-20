@@ -5,11 +5,11 @@ import (
 
 	"github.com/micro/go-micro/broker"
 	"github.com/micro/go-micro/client"
+	cli "github.com/micro/go-micro/client/grpc"
 	"github.com/micro/go-micro/server"
+	srv "github.com/micro/go-micro/server/grpc"
 	bkr "github.com/micro/go-plugins/broker/grpc"
-	cli "github.com/micro/go-plugins/client/grpc"
 	_ "github.com/micro/go-plugins/registry/kubernetes"
-	srv "github.com/micro/go-plugins/server/grpc"
 	"github.com/micro/micro/cmd"
 
 	// static selector offloads load balancing to k8s services
