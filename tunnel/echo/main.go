@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"flag"
 
+	"github.com/google/uuid"
 	"github.com/micro/go-micro/tunnel"
 	"github.com/micro/go-micro/transport"
 )
@@ -16,45 +17,56 @@ var (
 	channel = flag.String("channel", "default", "the channel")
 )
 
-func readLoop(c transport.Socket) {
+func readLoop(c tunnel.Session, readChan chan *transport.Message) {
 	for {
 		m := new(transport.Message)
 		if err := c.Recv(m); err != nil {
 			return
 		}
-		fmt.Println(string(m.Body))
+
+		// fire them into the channel
+		select {
+		case readChan <- m:
+		default:
+		}
 	}
 }
 
-func writeLoop(c transport.Socket, ch chan []byte) {
+func writeLoop(c tunnel.Session, sendChan chan *transport.Message) {
 	for {
-		b := <-ch
-		if err := c.Send(&transport.Message{
-			Body: b,
-		}); err != nil {
+		m := <-sendChan
+
+		// don't relay back to sender
+		if c.Session() == m.Header["Session"] {
+			continue
+		}
+
+		// send messages
+		if err := c.Send(m); err != nil {
 			return
 		}
 	}
 }
 
-func accept(l tunnel.Listener, ch chan []byte) {
-	connCh := make(chan chan []byte)
+func serverAccept(l tunnel.Listener, sendChan chan *transport.Message) {
+	connCh := make(chan chan *transport.Message)
 
 	go func() {
-		var conns []chan []byte
+		conns := make(map[string]chan *transport.Message)
 
 		for {
+			// send all things we're writing to all connections
 			select {
-			case b := <-ch:
-				// send message to all conns
+			case b := <-sendChan:
 				for _, c := range conns {
 					select {
 					case c <- b:
 					default:
 					}
 				}
+			// append new connections
 			case c := <-connCh:
-				conns = append(conns, c)
+				conns[uuid.New().String()] = c
 			}
 		}
 	}()
@@ -69,11 +81,13 @@ func accept(l tunnel.Listener, ch chan []byte) {
 		fmt.Println("Accepting new connection")
 
 		// pass to reader
-		rch := make(chan []byte)
+		rch := make(chan *transport.Message)
 		connCh <- rch
 
-		// print out what we read
-		go readLoop(c)
+		// send anything we receive
+		go readLoop(c, sendChan)
+
+		// write our messages to conn
 		go writeLoop(c, rch)
 	}
 }
@@ -92,6 +106,7 @@ func main() {
 	}
 	defer tun.Close()
 
+	// listen for inbound messages on the channel
 	l, err := tun.Listen(*channel)
 	if err != nil {
 		fmt.Println(err)
@@ -99,10 +114,15 @@ func main() {
 	}
 	defer l.Close()
 
-	ch := make(chan []byte)
+	sendChan := make(chan *transport.Message)
+	printChan := make(chan *transport.Message)
 
-	go accept(l, ch)
+	// accept the messages on the channel
+	go serverAccept(l, sendChan)
 
+	// client code
+
+	// dial an outbound connection for the channel
 	c, err := tun.Dial(*channel)
 	if err != nil {
 		fmt.Println(err)
@@ -110,23 +130,34 @@ func main() {
 	}
 	defer c.Close()
 
-	// read and print what we get back
-	go readLoop(c)
+	// write the things we get back
+	go func() {
+		for m := range printChan {
+			if m.Header["Session"] == c.Session() {
+				continue
+			}
+			fmt.Println(string(m.Body))
+		}
+	}()
+
+	// read and print what we get back on the dialled conn
+	go readLoop(c, printChan)
 
 	// read input and send over the tunnel
 	scanner := bufio.NewScanner(os.Stdin)
 
 	for scanner.Scan() {
-		buf := scanner.Bytes()
-
-		// send over the dialled conn
-		if err := c.Send(&transport.Message{
-			Body: buf,
-		}); err != nil {
-			fmt.Println(err)
+		m := &transport.Message{
+			Header: map[string]string{
+				"Session": c.Session(),
+			},
+			Body: scanner.Bytes(),
 		}
 
 		// send to all listeners
-		ch <- buf
+		sendChan <- m
+
+		// send it also
+		c.Send(m)
 	}
 }
