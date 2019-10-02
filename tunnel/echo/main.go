@@ -1,19 +1,19 @@
 package main
 
 import (
-	"os"
 	"bufio"
-	"fmt"
 	"flag"
+	"fmt"
+	"os"
 
 	"github.com/google/uuid"
-	"github.com/micro/go-micro/tunnel"
 	"github.com/micro/go-micro/transport"
+	"github.com/micro/go-micro/tunnel"
 )
 
 var (
 	address = flag.String("address", ":10001", "tunnel address")
-	nodes = flag.String("nodes", "", "tunnel nodes")
+	nodes   = flag.String("nodes", "", "tunnel nodes")
 	channel = flag.String("channel", "default", "the channel")
 )
 
@@ -37,7 +37,7 @@ func writeLoop(c tunnel.Session, sendChan chan *transport.Message) {
 		m := <-sendChan
 
 		// don't relay back to sender
-		if c.Session() == m.Header["Session"] {
+		if c.Id() == m.Header["Session"] {
 			continue
 		}
 
@@ -70,7 +70,6 @@ func serverAccept(l tunnel.Listener, sendChan chan *transport.Message) {
 			}
 		}
 	}()
-
 
 	for {
 		c, err := l.Accept()
@@ -133,7 +132,7 @@ func main() {
 	// write the things we get back
 	go func() {
 		for m := range printChan {
-			if m.Header["Session"] == c.Session() {
+			if m.Header["Session"] == c.Id() {
 				continue
 			}
 			fmt.Println(string(m.Body))
@@ -149,7 +148,7 @@ func main() {
 	for scanner.Scan() {
 		m := &transport.Message{
 			Header: map[string]string{
-				"Session": c.Session(),
+				"Session": c.Id(),
 			},
 			Body: scanner.Bytes(),
 		}
