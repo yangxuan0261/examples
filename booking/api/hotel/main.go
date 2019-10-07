@@ -97,7 +97,7 @@ func (s *Hotel) Rates(ctx context.Context, req *hotel.Request, rsp *hotel.Respon
 		return merr.InternalServerError("api.hotel.rates", err.Error())
 	}
 
-	// make reqeusts for profiles and rates
+	// make requests for profiles and rates
 	profileCh := getHotelProfiles(s.Client, ctx, nearby.HotelIds)
 	rateCh := getRatePlans(s.Client, ctx, nearby.HotelIds, inDate, outDate)
 
@@ -119,7 +119,7 @@ func (s *Hotel) Rates(ctx context.Context, req *hotel.Request, rsp *hotel.Respon
 }
 
 func getToken(md metadata.Metadata) (string, error) {
-	// Grab the raw Authoirzation header
+	// Grab the raw Authorization header
 	authHeader := md["Authorization"]
 	if authHeader == "" {
 		return "", errors.New("Authorization header required")
