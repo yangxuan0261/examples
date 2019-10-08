@@ -11,6 +11,7 @@ import (
 	"github.com/micro/go-micro/client/selector"
 	"github.com/micro/go-micro/config/cmd"
 	"github.com/micro/go-micro/registry"
+	"github.com/micro/go-plugins/registry/etcdv3"
 
 	example "github.com/micro/examples/server/proto/example"
 )
@@ -39,7 +40,10 @@ func (n *dcSelector) Options() selector.Options {
 	return n.opts
 }
 
+var i int
+
 func (n *dcSelector) Select(service string, opts ...selector.SelectOption) (selector.Next, error) {
+	fmt.Printf("--- Select, service:%s\n", service)
 	services, err := n.opts.Registry.GetService(service)
 	if err != nil {
 		return nil, err
@@ -53,8 +57,10 @@ func (n *dcSelector) Select(service string, opts ...selector.SelectOption) (sele
 
 	// Filter the nodes for datacenter
 	for _, service := range services {
-		for _, node := range service.Nodes {
+		for _, node := range service.Nodes { // 每次给到的 Nodes 是乱序的, 可以优化到排序后本地缓存, 长度不一致时重新缓存最新的即可
 			if node.Metadata["datacenter"] == datacenter {
+				// fmt.Println("--- node.Metadata:", node.Metadata)
+				fmt.Printf("--- node, Address:%s, Id:%s\n", node.Address, node.Id)
 				nodes = append(nodes, node)
 			}
 		}
@@ -64,13 +70,15 @@ func (n *dcSelector) Select(service string, opts ...selector.SelectOption) (sele
 		return nil, selector.ErrNotFound
 	}
 
-	var i int
 	var mtx sync.Mutex
+
+	fmt.Printf("--- Select, len(nodes):%d\n", len(nodes))
 
 	return func() (*registry.Node, error) {
 		mtx.Lock()
 		defer mtx.Unlock()
 		i++
+		fmt.Printf("--- Select, call node:%d\n", i%len(nodes))
 		return nodes[i%len(nodes)], nil
 	}, nil
 }
@@ -98,7 +106,15 @@ func DCSelector(opts ...selector.Option) selector.Selector {
 		opt(&sopts)
 	}
 	if sopts.Registry == nil {
-		sopts.Registry = registry.DefaultRegistry
+		fmt.Println("--- sopts.Registry == nil")
+		registerDrive := etcdv3.NewRegistry(func(op *registry.Options) {
+			op.Addrs = []string{
+				"http://127.0.0.1:2379",
+			}
+		})
+		_ = registerDrive
+		sopts.Registry = registerDrive // 指定 etcdv3 为服务发现
+		// sopts.Registry = registry.DefaultRegistry
 	}
 	return &dcSelector{sopts}
 }
@@ -130,5 +146,6 @@ func main() {
 	fmt.Println("\n--- Call example ---")
 	for i := 0; i < 10; i++ {
 		call(i)
+		time.Sleep(time.Second * 1)
 	}
 }

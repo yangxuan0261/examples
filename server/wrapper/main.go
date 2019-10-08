@@ -4,10 +4,13 @@ import (
 	"log"
 
 	"context"
+
 	"github.com/micro/examples/server/handler"
 	"github.com/micro/examples/server/subscriber"
 	"github.com/micro/go-micro/config/cmd"
+	"github.com/micro/go-micro/registry"
 	"github.com/micro/go-micro/server"
+	"github.com/micro/go-plugins/registry/etcdv3"
 )
 
 func logWrapper(fn server.HandlerFunc) server.HandlerFunc {
@@ -35,10 +38,18 @@ func main() {
 	md := server.DefaultOptions().Metadata
 	md["datacenter"] = "local"
 
+	registerDrive := etcdv3.NewRegistry(func(op *registry.Options) {
+		op.Addrs = []string{
+			"http://127.0.0.1:2379",
+		}
+	})
+	_ = registerDrive
+
 	server.DefaultServer = server.NewServer(
 		server.WrapHandler(logWrapper),
 		server.WrapSubscriber(logSubWrapper),
 		server.Metadata(md),
+		server.Registry(registerDrive),
 	)
 
 	// Initialise Server
