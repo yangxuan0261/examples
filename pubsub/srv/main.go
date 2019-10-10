@@ -6,6 +6,7 @@ import (
 	"github.com/micro/go-micro/metadata"
 	"github.com/micro/go-micro/server"
 	"github.com/micro/go-micro/util/log"
+	"github.com/micro/go-plugins/broker/grpc"
 
 	"context"
 )
@@ -32,8 +33,11 @@ func subEv(ctx context.Context, event *proto.Event) error {
 
 func main() {
 	// create a service
+	grpcBroker := grpc.NewBroker()
+
 	service := micro.NewService(
 		micro.Name("go.micro.srv.pubsub"),
+		micro.Broker(grpcBroker), // // 使用 grpcBroker
 	)
 	// parse command line
 	service.Init()

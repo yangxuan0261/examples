@@ -5,9 +5,11 @@ import (
 	"time"
 
 	"context"
+
 	proto "github.com/micro/examples/pubsub/srv/proto"
 	"github.com/micro/go-micro"
 	"github.com/micro/go-micro/util/log"
+	"github.com/micro/go-plugins/broker/grpc"
 	"github.com/pborman/uuid"
 )
 
@@ -33,9 +35,12 @@ func sendEv(topic string, p micro.Publisher) {
 }
 
 func main() {
+	grpcBroker := grpc.NewBroker()
+
 	// create a service
 	service := micro.NewService(
 		micro.Name("go.micro.cli.pubsub"),
+		micro.Broker(grpcBroker), // 使用 grpcBroker
 	)
 	// parse command line
 	service.Init()
