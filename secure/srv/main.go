@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"context"
+
 	hello "github.com/micro/examples/greeter/srv/proto/hello"
 	"github.com/micro/go-micro"
 	"github.com/micro/go-micro/transport"
@@ -18,6 +19,8 @@ func (s *Say) Hello(ctx context.Context, req *hello.Request, rsp *hello.Response
 }
 
 func main() {
+	// tlsCfg := &tls.Config{InsecureSkipVerify: true}
+
 	service := micro.NewService(
 		micro.Name("go.micro.srv.greeter"),
 		micro.RegisterTTL(time.Second*30),

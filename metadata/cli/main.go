@@ -30,5 +30,5 @@ func main() {
 		return
 	}
 
-	fmt.Println(rsp.Msg)
+	fmt.Println("--- rsp:", rsp.Msg)
 }

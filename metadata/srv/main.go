@@ -20,7 +20,10 @@ func (s *Say) Hello(ctx context.Context, req *hello.Request, rsp *hello.Response
 		rsp.Msg = "No metadata received"
 		return nil
 	}
-	log.Printf("Received metadata %v\n", md)
+	// log.Printf("Received metadata %v\n", md)
+	for k, v := range md {
+		log.Printf("--- md, k:%s, v:%s\n", k, v)
+	}
 	rsp.Msg = fmt.Sprintf("Hello %s thanks for this %v", req.Name, md)
 	return nil
 }

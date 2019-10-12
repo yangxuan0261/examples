@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"context"
+
 	example "github.com/micro/examples/server/proto/example"
 	"github.com/micro/go-micro/config/cmd"
 )
@@ -67,13 +68,13 @@ func main() {
 	cmd.Init()
 
 	fmt.Println("\n--- Call example ---")
-	for i := 0; i < 10; i++ {
+	for i := 0; i < 3; i++ {
 		call(i)
 	}
 
 	fmt.Println("\n--- Streamer example ---")
-	stream(10)
+	stream(3)
 
 	fmt.Println("\n--- Ping Pong example ---")
-	pingPong(10)
+	pingPong(3)
 }
