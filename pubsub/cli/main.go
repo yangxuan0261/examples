@@ -11,6 +11,7 @@ import (
 	"github.com/micro/go-micro/util/log"
 	"github.com/micro/go-plugins/broker/grpc"
 	"github.com/pborman/uuid"
+	"github.com/micro/go-micro/metadata"
 )
 
 // send events using the publisher
@@ -27,8 +28,15 @@ func sendEv(topic string, p micro.Publisher) {
 
 		log.Logf("publishing %+v\n", ev)
 
+		// 加上一个 metadata
+		md := map[string]string{
+			"aaa": "111",
+			"bbb": "222",
+		}
+		ctx := metadata.NewContext(context.Background(), md)
+
 		// publish an event
-		if err := p.Publish(context.Background(), ev); err != nil {
+		if err := p.Publish(ctx, ev); err != nil {
 			log.Logf("error publishing: %v", err)
 		}
 	}
