@@ -6,7 +6,7 @@ import (
 	"github.com/micro/go-micro"
 )
 
-type Greeter struct{}
+type Greeter struct{} // 必须 首字母大写, 对外部包可以访问
 
 func (g *Greeter) Hello(ctx context.Context, name *string, msg *string) error {
 	*msg = "Hello " + *name

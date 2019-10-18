@@ -60,7 +60,8 @@ func (n *dcSelector) Select(service string, opts ...selector.SelectOption) (sele
 		for _, node := range service.Nodes { // 每次给到的 Nodes 是乱序的, 可以优化到排序后本地缓存, 长度不一致时重新缓存最新的即可
 			if node.Metadata["datacenter"] == datacenter {
 				// fmt.Println("--- node.Metadata:", node.Metadata)
-				fmt.Printf("--- node, Address:%s, Id:%s\n", node.Address, node.Id)
+				fmt.Printf("--- node:%+v\n", node)
+				// fmt.Printf("--- node, Address:%s, Id:%s\n", node.Address, node.Id)
 				nodes = append(nodes, node)
 			}
 		}
