@@ -41,6 +41,10 @@ var _ server.Option
 
 // Client API for Say service
 
+func init() {
+	println("--- hello")
+}
+
 type SayService interface {
 	Hello(ctx context.Context, in *Request, opts ...client.CallOption) (*Response, error)
 }
