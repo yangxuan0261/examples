@@ -1,11 +1,12 @@
 package main
 
 import (
-	"log"
-	"time"
-
 	hello "github.com/micro/examples/greeter/srv/proto/hello"
 	"github.com/micro/go-micro"
+	"github.com/micro/go-micro/registry"
+	"github.com/micro/go-plugins/registry/etcdv3"
+	"log"
+	"time"
 
 	"context"
 )
@@ -19,10 +20,18 @@ func (s *Say) Hello(ctx context.Context, req *hello.Request, rsp *hello.Response
 }
 
 func main() {
+	registerDrive := etcdv3.NewRegistry(func(op *registry.Options) {
+		op.Addrs = []string{
+			"http://127.0.0.1:2379",
+		}
+	})
+	_ = registerDrive
+
 	service := micro.NewService(
 		micro.Name("go.micro.srv.greeter"),
 		micro.RegisterTTL(time.Second*30),
 		micro.RegisterInterval(time.Second*10),
+		//micro.Registry(registerDrive),
 	)
 
 	// optionally setup command line usage

@@ -42,7 +42,7 @@ var _ server.Option
 // Client API for Say service
 
 func init() {
-	println("--- hello")
+	//println("--- hello")
 }
 
 type SayService interface {
